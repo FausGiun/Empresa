@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrendSight Co. | Dashboard Predictivo</title>
+    <style>
+        :root { --primary: #1A252C; --accent: #D35400; --bg: #F4F6F7; --text: #2C3E50; --success: #27AE60; --danger: #C0392B; --warning: #F39C12; }
+        body { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        header { background-color: var(--primary); color: white; padding: 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--accent); }
+        header h1 { margin: 0; font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+        .tagline { font-size: 1rem; color: #BDC3C7; margin-top: 5px; }
+        .user-info { text-align: right; font-size: 0.9rem; color: #BDC3C7; }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+        .section-title { font-size: 1.5rem; border-bottom: 2px solid #E0E0E0; padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
+        
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+        .kpi-card { background: white; border-radius: 10px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 5px solid var(--accent); transition: transform 0.2s; }
+        .kpi-card:hover { transform: translateY(-5px); }
+        .kpi-card h3 { margin: 0 0 10px 0; font-size: 1.1rem; color: #7F8C8D; text-transform: uppercase; letter-spacing: 1px; }
+        .metric { font-size: 2.2rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; justify-content: space-between; }
+        .trend-up { color: var(--success); font-size: 1.2rem; }
+        
+        .data-table-container { background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #ECF0F1; color: var(--primary); padding: 1.2rem; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; }
+        td { padding: 1.2rem; border-bottom: 1px solid #ECF0F1; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #FAFAFA; }
+        
+        .badge { padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; text-align: center; display: inline-block; }
+        .badge-alta { background-color: rgba(39, 174, 96, 0.15); color: var(--success); }
+        .badge-media { background-color: rgba(243, 156, 18, 0.15); color: var(--warning); }
+        .badge-baja { background-color: rgba(192, 57, 43, 0.15); color: var(--danger); }
+        
+        .confidence-bar { height: 8px; background: #ECF0F1; border-radius: 4px; overflow: hidden; width: 100px; margin-top: 5px; }
+        .confidence-fill { height: 100%; background: var(--primary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>TrendSight Co.</h1>
+            <div class="tagline">Fashion Foresight & Data Intelligence</div>
+        </div>
+        <div class="user-info">
+            <strong>Sesión:</strong> Emprendedor PYME (LATAM)<br>
+            <strong>Actualización de Modelos:</strong> Hace 2 horas
+        </div>
+    </header>
+
+    <div class="container">
+        <h2 class="section-title">Insights Estratégicos (Combinación Base de Datos + Google Trends)</h2>
+        
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>Macro Tendencia en Pico</h3>
+                <div class="metric">
+                    Quiet Luxury
+                    <span class="trend-up">▲ +172%</span>
+                </div>
+                <p style="margin: 10px 0 0 0; font-size: 0.9rem; color: #7F8C8D;">Búsquedas semanales est: 5,104</p>
+            </div>
+            <div class="kpi-card" style="border-left-color: var(--primary);">
+                <h3>Color Recomendado SS25</h3>
+                <div class="metric">
+                    Amarillo Mantequilla
+                </div>
+                <p style="margin: 10px 0 0 0; font-size: 0.9rem; color: #7F8C8D;">Probabilidad de éxito predictivo: 86%</p>
+            </div>
+            <div class="kpi-card" style="border-left-color: var(--success);">
+                <h3>Oportunidad de Margen</h3>
+                <div class="metric">
+                    Camisetas Modal
+                </div>
+                <p style="margin: 10px 0 0 0; font-size: 0.9rem; color: #7F8C8D;">Rango Retail Óptimo: $45 - $123 USD</p>
+            </div>
+        </div>
+
+        <h2 class="section-title">Recomendaciones de Compra de Stock Inteligente</h2>
+        
+        <div class="data-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categoría / Prenda</th>
+                        <th>Tendencia / Temporada</th>
+                        <th>Color / Material</th>
+                        <th>Vol. Estimado (Trends)</th>
+                        <th>Confianza IA</th>
+                        <th>Recomendación IA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Camisetas</strong><br><span style="font-size:0.85rem; color:#7F8C8D;">Manga Larga</span></td>
+                        <td>Athleisure<br><span style="font-size:0.85rem; color:#7F8C8D;">SS25</span></td>
+                        <td>Amarillo Mantequilla<br><span style="font-size:0.85rem; color:#7F8C8D;">Modal</span></td>
+                        <td><span style="color: var(--success); font-weight:600;">▲ Fuerte (2,578)</span></td>
+                        <td>
+                            86%
+                            <div class="confidence-bar"><div class="confidence-fill" style="width: 86%;"></div></div>
+                        </td>
+                        <td><span class="badge badge-alta">Compra Moderada / Alta</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jeans</strong><br><span style="font-size:0.85rem; color:#7F8C8D;">Straight</span></td>
+                        <td>Boho Chic<br><span style="font-size:0.85rem; color:#7F8C8D;">SS26</span></td>
+                        <td>Rojo Tomate<br><span style="font-size:0.85rem; color:#7F8C8D;">Lyocell / Tencel</span></td>
+                        <td><span style="color: var(--success); font-weight:600;">▲ Estable (2,668)</span></td>
+                        <td>
+                            55%
+                            <div class="confidence-bar"><div class="confidence-fill" style="width: 55%; background: var(--warning);"></div></div>
+                        </td>
+                        <td><span class="badge badge-media">Compra Moderada</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Abrigos</strong><br><span style="font-size:0.85rem; color:#7F8C8D;">Trench</span></td>
+                        <td>Gorpcore<br><span style="font-size:0.85rem; color:#7F8C8D;">SS26</span></td>
+                        <td>Rojo Tomate<br><span style="font-size:0.85rem; color:#7F8C8D;">Cuero Vegano</span></td>
+                        <td><span style="color: var(--warning); font-weight:600;">▶ Neutral (1,401)</span></td>
+                        <td>
+                            59%
+                            <div class="confidence-bar"><div class="confidence-fill" style="width: 59%; background: var(--warning);"></div></div>
+                        </td>
+                        <td><span class="badge badge-media">Monitorear</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Faldas</strong><br><span style="font-size:0.85rem; color:#7F8C8D;">Midi</span></td>
+                        <td>Y2K Revival<br><span style="font-size:0.85rem; color:#7F8C8D;">AW25</span></td>
+                        <td>Morado Orquídea<br><span style="font-size:0.85rem; color:#7F8C8D;">Nylon</span></td>
+                        <td><span style="color: var(--danger); font-weight:600;">▼ Declive (304)</span></td>
+                        <td>
+                            67%
+                            <div class="confidence-bar"><div class="confidence-fill" style="width: 67%; background: var(--danger);"></div></div>
+                        </td>
+                        <td><span class="badge badge-baja">Evitar Inversión</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+<script>
+    // Función para cargar los datos del JSON generado en Colab
+    async function cargarDatosReales() {
+        try {
+            const respuesta = await fetch('datos_para_web.json');
+            const datos = await respuesta.json();
+            
+            const tablaBody = document.querySelector('tbody');
+            tablaBody.innerHTML = ''; // Limpiar datos de ejemplo
+
+            datos.forEach(item => {
+                const fila = document.createElement('tr');
+                
+                // Determinar el color de la tendencia (Momentum)
+                const momentumColor = item['Momentum (%)'] >= 0 ? 'var(--success)' : 'var(--danger)';
+                const flecha = item['Momentum (%)'] >= 0 ? '▲' : '▼';
+
+                fila.innerHTML = `
+                    <td><strong>${item.Tendencia}</strong></td>
+                    <td>Temporada Actual</td>
+                    <td>Ver Excel para detalles</td>
+                    <td><span style="color: ${momentumColor}; font-weight:600;">${flecha} ${item['Momentum (%)']}%</span></td>
+                    <td>${item['Interés Actual']} pts</td>
+                    <td><span class="badge ${item['Momentum (%)'] > 5 ? 'badge-alta' : 'badge-media'}">
+                        ${item['Momentum (%)'] > 5 ? 'Compra Sugerida' : 'Monitorear'}
+                    </span></td>
+                `;
+                tablaBody.appendChild(fila);
+            });
+        } catch (error) {
+            console.error("Error cargando el JSON:", error);
+            // Si da error, es probable que necesites un servidor local (ver nota abajo)
+        }
+    }
+
+    // Ejecutar la carga al abrir la página
+    document.addEventListener('DOMContentLoaded', cargarDatosReales);
+</script>
+</body>
+</html>
