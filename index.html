@@ -91,92 +91,56 @@
                         <th>Recomendación IA</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Camisetas</strong><br><span style="font-size:0.85rem; color:#7F8C8D;">Manga Larga</span></td>
-                        <td>Athleisure<br><span style="font-size:0.85rem; color:#7F8C8D;">SS25</span></td>
-                        <td>Amarillo Mantequilla<br><span style="font-size:0.85rem; color:#7F8C8D;">Modal</span></td>
-                        <td><span style="color: var(--success); font-weight:600;">▲ Fuerte (2,578)</span></td>
-                        <td>
-                            86%
-                            <div class="confidence-bar"><div class="confidence-fill" style="width: 86%;"></div></div>
-                        </td>
-                        <td><span class="badge badge-alta">Compra Moderada / Alta</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Jeans</strong><br><span style="font-size:0.85rem; color:#7F8C8D;">Straight</span></td>
-                        <td>Boho Chic<br><span style="font-size:0.85rem; color:#7F8C8D;">SS26</span></td>
-                        <td>Rojo Tomate<br><span style="font-size:0.85rem; color:#7F8C8D;">Lyocell / Tencel</span></td>
-                        <td><span style="color: var(--success); font-weight:600;">▲ Estable (2,668)</span></td>
-                        <td>
-                            55%
-                            <div class="confidence-bar"><div class="confidence-fill" style="width: 55%; background: var(--warning);"></div></div>
-                        </td>
-                        <td><span class="badge badge-media">Compra Moderada</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Abrigos</strong><br><span style="font-size:0.85rem; color:#7F8C8D;">Trench</span></td>
-                        <td>Gorpcore<br><span style="font-size:0.85rem; color:#7F8C8D;">SS26</span></td>
-                        <td>Rojo Tomate<br><span style="font-size:0.85rem; color:#7F8C8D;">Cuero Vegano</span></td>
-                        <td><span style="color: var(--warning); font-weight:600;">▶ Neutral (1,401)</span></td>
-                        <td>
-                            59%
-                            <div class="confidence-bar"><div class="confidence-fill" style="width: 59%; background: var(--warning);"></div></div>
-                        </td>
-                        <td><span class="badge badge-media">Monitorear</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Faldas</strong><br><span style="font-size:0.85rem; color:#7F8C8D;">Midi</span></td>
-                        <td>Y2K Revival<br><span style="font-size:0.85rem; color:#7F8C8D;">AW25</span></td>
-                        <td>Morado Orquídea<br><span style="font-size:0.85rem; color:#7F8C8D;">Nylon</span></td>
-                        <td><span style="color: var(--danger); font-weight:600;">▼ Declive (304)</span></td>
-                        <td>
-                            67%
-                            <div class="confidence-bar"><div class="confidence-fill" style="width: 67%; background: var(--danger);"></div></div>
-                        </td>
-                        <td><span class="badge badge-baja">Evitar Inversión</span></td>
-                    </tr>
+                <tbody id="tabla-cuerpo">
+                    <!-- Los datos se insertarán aquí por JavaScript -->
                 </tbody>
             </table>
         </div>
     </div>
-<script>
-    // Función para cargar los datos del JSON generado en Colab
-    async function cargarDatosReales() {
-        try {
-            const respuesta = await fetch('datos_para_web.json');
-            const datos = await respuesta.json();
-            
-            const tablaBody = document.querySelector('tbody');
-            tablaBody.innerHTML = ''; // Limpiar datos de ejemplo
+
+    <script>
+        // DATOS INTEGRADOS DIRECTAMENTE (Sin fetch, no falla en GitHub Pages)
+        const datos = [
+            {"Categoria": "Camisetas (Manga Larga)", "Tendencia": "Athleisure (SS25)", "Color": "Amarillo Mantequilla / Modal", "Volumen": "▲ Fuerte (2,578)", "Confianza": 86, "Recomendacion": "Compra Moderada / Alta", "TipoBadge": "badge-alta"},
+            {"Categoria": "Jeans (Straight)", "Tendencia": "Boho Chic (SS26)", "Color": "Rojo Tomate / Lyocell", "Volumen": "▲ Estable (2,668)", "Confianza": 55, "Recomendacion": "Compra Moderada", "TipoBadge": "badge-media"},
+            {"Categoria": "Abrigos (Trench)", "Tendencia": "Gorpcore (SS26)", "Color": "Rojo Tomate / Cuero Vegano", "Volumen": "▶ Neutral (1,401)", "Confianza": 59, "Recomendacion": "Monitorear", "TipoBadge": "badge-media"},
+            {"Categoria": "Faldas (Midi)", "Tendencia": "Y2K Revival (AW25)", "Color": "Morado Orquídea / Nylon", "Volumen": "▼ Declive (304)", "Confianza": 67, "Recomendacion": "Evitar Inversión", "TipoBadge": "badge-baja"}
+        ];
+
+        function renderizarTabla() {
+            const tablaBody = document.getElementById('tabla-cuerpo');
+            tablaBody.innerHTML = ''; 
 
             datos.forEach(item => {
                 const fila = document.createElement('tr');
                 
-                // Determinar el color de la tendencia (Momentum)
-                const momentumColor = item['Momentum (%)'] >= 0 ? 'var(--success)' : 'var(--danger)';
-                const flecha = item['Momentum (%)'] >= 0 ? '▲' : '▼';
+                // Color del porcentaje de confianza
+                let colorBarra = 'var(--primary)';
+                if(item.Confianza < 60) colorBarra = 'var(--warning)';
+                if(item.Confianza < 40) colorBarra = 'var(--danger)';
+
+                // Color del texto de volumen
+                let colorVolumen = 'var(--success)';
+                if(item.Volumen.includes('Neutral')) colorVolumen = 'var(--warning)';
+                if(item.Volumen.includes('Declive')) colorVolumen = 'var(--danger)';
 
                 fila.innerHTML = `
-                    <td><strong>${item.Tendencia}</strong></td>
-                    <td>Temporada Actual</td>
-                    <td>Ver Excel para detalles</td>
-                    <td><span style="color: ${momentumColor}; font-weight:600;">${flecha} ${item['Momentum (%)']}%</span></td>
-                    <td>${item['Interés Actual']} pts</td>
-                    <td><span class="badge ${item['Momentum (%)'] > 5 ? 'badge-alta' : 'badge-media'}">
-                        ${item['Momentum (%)'] > 5 ? 'Compra Sugerida' : 'Monitorear'}
-                    </span></td>
+                    <td><strong>${item.Categoria.split(' (')[0]}</strong><br><span style="font-size:0.85rem; color:#7F8C8D;">${item.Categoria.split('(')[1].replace(')','')}</span></td>
+                    <td>${item.Tendencia.split(' (')[0]}<br><span style="font-size:0.85rem; color:#7F8C8D;">${item.Tendencia.split('(')[1].replace(')','')}</span></td>
+                    <td>${item.Color.split(' / ')[0]}<br><span style="font-size:0.85rem; color:#7F8C8D;">${item.Color.split(' / ')[1]}</span></td>
+                    <td><span style="color: ${colorVolumen}; font-weight:600;">${item.Volumen}</span></td>
+                    <td>
+                        ${item.Confianza}%
+                        <div class="confidence-bar"><div class="confidence-fill" style="width: ${item.Confianza}%; background: ${colorBarra};"></div></div>
+                    </td>
+                    <td><span class="badge ${item.TipoBadge}">${item.Recomendacion}</span></td>
                 `;
                 tablaBody.appendChild(fila);
             });
-        } catch (error) {
-            console.error("Error cargando el JSON:", error);
-            // Si da error, es probable que necesites un servidor local (ver nota abajo)
         }
-    }
 
-    // Ejecutar la carga al abrir la página
-    document.addEventListener('DOMContentLoaded', cargarDatosReales);
-</script>
+        // Cargar al iniciar
+        window.onload = renderizarTabla;
+    </script>
 </body>
 </html>
