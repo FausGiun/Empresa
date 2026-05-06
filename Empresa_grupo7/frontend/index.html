@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head> 
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TrendSight Co. — Decisor de Stock</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-icon">✦</span>
+        <div>
+          <h1 class="brand-name">Futura Co.</h1>
+          <p class="brand-tagline">Fashion Foresight & Data Intelligence</p>
+        </div>
+      </div>
+      <div class="header-badge">Stock Intelligence v1.0</div>
+    </div>
+    <div class="currency-picker">
+  <label for="currency">Moneda:</label>
+  <select id="currencySelector" onchange="changeCurrency()">
+    <option value="USD">USD (Dólar)</option>
+    <option value="ARS">ARS (Pesos)</option>
+  </select>
+</div>
+  </header>
+
+  <!-- SEARCH SECTION -->
+  <section class="search-section">
+    <div class="container">
+      <p class="search-label">¿Qué prenda querés analizar?</p>
+      <div class="search-box">
+        <input
+          type="text"
+          id="searchInput"
+          class="search-input"
+          placeholder="ej: jeans, buzo, falda, pantalon..."
+          autocomplete="off"
+        />
+        <button class="search-btn" id="searchBtn" onclick="buscar()">
+          <span class="btn-icon">⚡</span>
+          Analizar
+        </button>
+      </div>
+      <div class="search-hints">
+        <span class="hint" onclick="buscar('jeans')">jeans</span>
+        <span class="hint" onclick="buscar('buzo')">buzo</span>
+        <span class="hint" onclick="buscar('falda')">falda</span>
+        <span class="hint" onclick="buscar('blazer')">blazer</span>
+        <span class="hint" onclick="buscar('jogger')">jogger</span>
+        <span class="hint" onclick="buscar('vestido')">vestido</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESTADO: VACÍO -->
+  <section class="state-empty" id="stateEmpty">
+    <div class="container">
+      <div class="empty-card">
+        <div class="empty-icon">📊</div>
+        <h2>Ingresá una prenda para comenzar</h2>
+        <p>El sistema cruza tu base de datos interna con Google Trends<br>para generar una recomendación de stock basada en datos reales.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESTADO: LOADING -->
+  <section class="state-loading hidden" id="stateLoading">
+    <div class="container">
+      <div class="loading-card">
+        <div class="spinner"></div>
+        <p id="loadingMsg">Analizando datos...</p>
+        <div class="loading-steps">
+          <div class="step" id="step1">🔍 Cargando datos del Excel</div>
+          <div class="step" id="step2">📈 Consultando Google Trends</div>
+          <div class="step" id="step3">⚡ Calculando decisión de stock</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESTADO: ERROR -->
+  <section class="state-error hidden" id="stateError">
+    <div class="container">
+      <div class="error-card">
+        <div class="error-icon">⚠️</div>
+        <h2>No se pudieron cargar los resultados</h2>
+        <p id="errorMsg"></p>
+        <div class="error-hint">
+          <strong>Pasos para resolverlo:</strong>
+          <ol>
+            <li>Ejecutá el script Python: <code>python scripts/analizar.py jeans</code></li>
+            <li>Verificá que se generó <code>frontend/data.json</code></li>
+            <li>Recargá esta página con Live Server</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTADOS -->
+  <section class="results hidden" id="stateResults">
+    <div class="container">
+
+      <!-- META INFO -->
+      <div class="results-meta">
+        <span id="metaTermino"></span>
+        <span class="meta-sep">·</span>
+        <span id="metaFecha"></span>
+      </div>
+
+      <!-- DECISIÓN PRINCIPAL -->
+      <div class="decision-card" id="decisionCard">
+        <div class="decision-header">
+          <div class="decision-badge" id="decisionBadge">
+            <span class="decision-icon" id="decisionIcon"></span>
+            <span class="decision-text" id="decisionText"></span>
+          </div>
+          <div class="decision-score">
+            <span class="score-label">Puntaje TrendSight</span>
+            <div class="score-bar-wrap">
+              <div class="score-bar" id="scoreBar"></div>
+            </div>
+            <span class="score-value" id="scoreValue"></span>
+          </div>
+        </div>
+        <p class="decision-description" id="decisionDescription"></p>
+        <div class="decision-reasons" id="decisionReasons"></div>
+      </div>
+
+      <!-- MÉTRICAS GRID -->
+      <div class="metrics-grid">
+
+        <!-- EXCEL DATA -->
+        <div class="metric-card">
+          <div class="metric-card-header">
+            <span class="metric-card-icon">📁</span>
+            <h3>Base de Datos <a href="faq.html#margen" class="help-icon">?</a></h3>
+          </div>
+          <div class="metric-rows" id="excelMetrics"></div>
+        </div>
+
+        <!-- GOOGLE TRENDS -->
+        <div class="metric-card">
+          <div class="metric-card-header">
+            <span class="metric-card-icon">📈</span>
+            <h3>Google Trends <a href="faq.html#momentum" class="help-icon">?</a></h3>
+          </div>
+          <div class="metric-rows" id="trendsMetrics"></div>
+        </div>
+
+      </div>
+
+      <!-- PREDICCIONES -->
+      <div class="section-block" id="predSection">
+        <h3 class="section-title">🔮 Predicciones internas para próximas temporadas</h3>
+        <div class="pred-grid" id="predGrid"></div>
+      </div>
+
+      <!-- PRODUCTOS TOP -->
+       <div class="section-block">
+        <h3 class="section-title">📊 Comparativa de Deseabilidad (Lyst Score)</h3>
+        <div style="height: 300px; margin-bottom: 20px;">
+          <canvas id="lystChart"></canvas>
+        </div>
+</div>
+      <div class="section-block" id="productsSection">
+        <h3 class="section-title">🏆 Productos con mayor Lyst Score encontrados</h3>
+        <div class="table-wrap">
+          <table class="products-table" id="productsTable">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Marca</th>
+                <th>Tendencia</th>
+                <th>Lyst <a href="faq.html#lyst" title="¿Qué es esto?" style="text-decoration:none; color:var(--accent); font-size:10px; margin-left:4px;">ⓘ</a></th>
+                <th>Precio</th>
+                <th>Color</th>
+              </tr>
+            </thead>
+            <tbody id="productsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MARCAS Y COLORES TOP -->
+      <div class="tags-grid">
+        <div class="tags-card">
+          <h4>Marcas líderes en esta categoría</h4>
+          <div class="tags" id="marcasTags"></div>
+        </div>
+        <div class="tags-card">
+          <h4>Colores trending</h4>
+          <div class="tags" id="coloresTags"></div>
+        </div>
+        <div class="tags-card">
+          <h4>Tendencias asociadas</h4>
+          <div class="tags" id="tendenciasTags"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+<p>Futura Co. © 2026 · Fashion Foresight & Data Intelligence · Uso interno y académico</p>    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/app.js"></script>
+
+  <div id="productModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modalTitle">Ficha Técnica</h2>
+      <button onclick="cerrarModal()" class="close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="ficha-grid">
+        <div class="ficha-section">
+          <h4>🧵 ADN del Producto</h4>
+          <p><strong>Material:</strong> <span id="mMaterial"></span></p>
+          <p><strong>Talles:</strong> <span id="mTalles"></span></p>
+        </div>
+        <div class="ficha-section">
+          <h4>🎯 Segmentación</h4>
+          <p><strong>Edad:</strong> <span id="mEdad"></span></p>
+          <p><strong>Canal:</strong> <span id="mCanal"></span></p>
+        </div>
+        <div class="ficha-section">
+          <h4>📊 Business Intelligence</h4>
+          <p><strong>Competencia:</strong> <span id="mComp"></span></p>
+          <p><strong>Confianza IA:</strong> <span id="mConf"></span>%</p>
+          <p><strong>Satisfacción:</strong> <span id="mSat"></span>/5 ⭐</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
