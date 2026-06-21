@@ -14,7 +14,8 @@ async function abrirFicha(nombre) {
 
     try {
         const res = await fetch(`http://localhost:5000/api/detalle?nombre=${encodeURIComponent(nombre)}`);
-        const d = await res.json();
+      const d = await res.json();
+      $('mImagen').src = d.imagen_url;
 
         // Llenamos los datos en el modal
         $('mMaterial').textContent = d.adn.materiales;
@@ -114,9 +115,19 @@ function animateLoading() {
 
 // ─── BÚSQUEDA PRINCIPAL ────────────────────────────────────────────────────────
 
+// ─── BÚSQUEDA PRINCIPAL ────────────────────────────────────────────────────────
+
 async function buscar(termino) {
   const inputEl = $('searchInput');
-  const query = termino || inputEl.value.trim();
+  
+  // 1. EL ARREGLO: Si hacemos clic en un tag, 'termino' es un texto. 
+  // Forzamos a que el cajón de búsqueda se borre y muestre este nuevo texto.
+  if (termino && typeof termino === 'string') {
+      inputEl.value = termino;
+  }
+  
+  // 2. Tomamos la palabra final que quedó en el buscador
+  const query = inputEl.value.trim();
   
   if (!query) {
     inputEl.focus();
@@ -125,41 +136,38 @@ async function buscar(termino) {
     return;
   }
 
-  if (!termino) inputEl.value = query;
-
   showState('stateLoading');
   const loadInterval = animateLoading();
 
-  // Simular tiempo de procesamiento (el JSON ya fue generado por Python)
+  // Simular tiempo de procesamiento
   await new Promise(r => setTimeout(r, 2200));
   clearInterval(loadInterval);
 
-  // Activar último step
+  // Activar último step de carga
   ['step1','step2','step3'].forEach(s => {
-    $('step' + s.replace('step',''));
-    $(s).classList.remove('active');
-    $(s).classList.add('done');
+    const stepEl = $(s);
+    if (stepEl) {
+        stepEl.classList.remove('active');
+        stepEl.classList.add('done');
+    }
   });
 
   await new Promise(r => setTimeout(r, 400));
-
+guardarEnHistorial(query);
   try {
-    // Cargar data.json generado por Python
+    // Pegarle al backend local
     const response = await fetch('http://localhost:5000/api/analizar?termino=' + encodeURIComponent(query));
     
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     
     currentData = await response.json();
     localStorage.setItem('trendSight_lastResult', JSON.stringify(currentData));
-    renderResults(currentData);
-    showState('stateResults');
-    // Verificar que corresponde al término buscado
+    
     const terminoJson = (currentData?.meta?.termino_buscado || '').toLowerCase();
     const terminoBuscado = query.toLowerCase();
     
     if (terminoJson && terminoJson !== terminoBuscado) {
-      // Mostrar advertencia pero continuar con los datos disponibles
-      console.warn(`Los datos son para "${terminoJson}", pero buscaste "${terminoBuscado}". Ejecutá el script Python con el término correcto.`);
+      console.warn(`Los datos son para "${terminoJson}", pero buscaste "${terminoBuscado}".`);
     }
 
     renderResults(currentData);
@@ -181,7 +189,7 @@ function renderResults(data) {
   $('metaFecha').textContent = meta?.fecha_analisis ? formatDate(meta.fecha_analisis) : '';
 
   // DECISIÓN
-  renderDecision(resumen);
+  renderDecision(resumen, excel);
 
   // MÉTRICAS EXCEL
   renderExcelMetrics(excel);
@@ -204,31 +212,50 @@ function renderResults(data) {
 
 // ── Decisión ──────────────────────────────────────────────────────────────────
 
-function renderDecision(resumen) {
+function renderDecision(resumen, excel) {
   if (!resumen) return;
 
   const badge = $('decisionBadge');
-  badge.className = 'decision-badge ' + (resumen.color || 'blue');
-  $('decisionIcon').textContent = resumen.icono || '⚡';
-  $('decisionText').textContent = resumen.decision || '—';
-
-  $('decisionDescription').textContent = resumen.descripcion || '';
+  if (badge) badge.className = 'decision-badge ' + (resumen.color || 'blue');
+  
+  if ($('decisionIcon')) $('decisionIcon').textContent = resumen.icono || '⚡';
+  if ($('decisionText')) $('decisionText').textContent = resumen.decision || '—';
+  if ($('decisionDescription')) $('decisionDescription').textContent = resumen.descripcion || '';
 
   // Score bar
   const pct = Math.min(100, Math.max(0, resumen.puntaje || 0));
-  $('scoreBar').style.width = pct + '%';
-  $('scoreBar').className = 'score-bar ' + (resumen.color || 'blue');
-  $('scoreValue').textContent = pct + '/100';
+  if ($('scoreBar')) {
+      $('scoreBar').style.width = pct + '%';
+      $('scoreBar').className = 'score-bar ' + (resumen.color || 'blue');
+  }
+  if ($('scoreValue')) $('scoreValue').textContent = pct + '/100';
+
+  // --- LÓGICA STOCKINTEL ---
+  if (excel && $('siUnidades')) {
+      // 1. Calculamos unidades: a mayor puntaje, más unidades. Tope de 850, mínimo de 15.
+      const unidadesSugeridas = Math.max(15, Math.round((pct / 100) * 850));
+      
+      // 2. Calculamos la inversión (Asumimos costo mayorista como 45% del retail promedio)
+      const precioRetail = excel.precio_retail_prom || 50;
+      const costoMayorista = precioRetail * 0.45;
+      const inversionTotal = unidadesSugeridas * costoMayorista;
+
+      
+      $('siUnidades').textContent = unidadesSugeridas + ' unid.';
+      $('siInversion').textContent = 'Capital req: ' + formatPrice(inversionTotal);
+  }
 
   // Razones
   const reasons = $('decisionReasons');
-  reasons.innerHTML = '';
-  (resumen.razones || []).forEach(r => {
-    const div = document.createElement('div');
-    div.className = 'reason-item';
-    div.textContent = r;
-    reasons.appendChild(div);
-  });
+  if (reasons) {
+      reasons.innerHTML = '';
+      (resumen.razones || []).forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'reason-item';
+        div.textContent = r;
+        reasons.appendChild(div);
+      });
+  }
 }
 
 // ── Métricas Excel ────────────────────────────────────────────────────────────
@@ -408,6 +435,8 @@ function renderPredicciones(predicciones) {
 
 // ── Productos ─────────────────────────────────────────────────────────────────
 
+// ── Productos ─────────────────────────────────────────────────────────────────
+
 function renderProductos(productos) {
   const section = $('productsSection');
   const tbody = $('productsBody');
@@ -442,7 +471,10 @@ function renderProductos(productos) {
         <div class="lyst-badge ${lystClass}">${lyst}</div>
       </td>
       <td>${formatPrice(p.precio_retail)}</td>
-      <td style="color:var(--text-muted)">${p.color || '—'}</td>
+      <td style="display: flex; align-items: center; gap: 8px; color:var(--text-muted)">
+        <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: ${obtenerCodigoColor(p.color)}; border: 1px solid rgba(255,255,255,0.2);"></span>
+        ${p.color || '—'}
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -545,4 +577,113 @@ function renderLystChart(productos) {
       }
     }
   });
+}
+function obtenerCodigoColor(nombreColor) {
+    if (!nombreColor) return 'transparente';
+    
+    // Mapa ampliado con los colores de tu base de datos
+    const mapaColores = {
+        'Negro': '#000000', 
+        'Blanco': '#ffffff', 
+        'Azul': '#1d4ed8', 
+        'Plateado': '#e5e7eb', 
+        'Malva': '#D2B4DE', 
+        'Beige': '#F5F5DC', 
+        'Rojo': '#b91c1c', 
+        'Gris': '#6b7280',
+        'Azul marino': '#1e3a8a',
+        'Camel': '#c19a6b',
+        'Burdeos': '#800020',
+        'Verde oliva': '#556b2f',
+        'Amarillo mantequilla': '#fef08a'
+    };
+    
+    // Retorna el color o transparente si no lo encuentra
+    return mapaColores[nombreColor] || 'transparente';
+}
+
+async function descargarPDF(event) {
+    const btn = event.target;
+    btn.innerHTML = "⏳ Generando...";
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const titulo = document.getElementById('modalTitle').textContent.replace('Análisis: ', '').trim();
+    const imgElement = document.getElementById('mImagen');
+    
+    // Título
+    doc.setFontSize(22);
+    doc.text("Futura Co. - Reporte de Inteligencia", 20, 20);
+    doc.setFontSize(14);
+    doc.text("Producto: " + titulo, 20, 30);
+
+    // Intentar agregar la imagen
+    try {
+        const imgData = await toBase64(imgElement.src);
+        doc.addImage(imgData, 'JPEG', 20, 40, 80, 100);
+    } catch (e) {
+        doc.text("[Imagen no disponible]", 20, 60);
+    }
+
+    // Datos (Posicionados a mano)
+    doc.setFontSize(12);
+    doc.text("ADN del Producto:", 110, 50);
+    doc.text("Material: " + document.getElementById('mMaterial').textContent, 110, 60);
+    doc.text("Talles: " + document.getElementById('mTalles').textContent, 110, 70);
+
+    doc.text("Segmentación:", 110, 90);
+    doc.text("Edad: " + document.getElementById('mEdad').textContent, 110, 100);
+    doc.text("Canal: " + document.getElementById('mCanal').textContent, 110, 110);
+
+    doc.save(`Futura_Reporte_${titulo}.pdf`);
+    btn.innerHTML = "📥 Descargar PDF";
+}
+
+// Helper para convertir imagen a base64
+function toBase64(url) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            canvas.getContext('2d').drawImage(img, 0, 0);
+            resolve(canvas.toDataURL('image/jpeg'));
+        };
+        img.src = url;
+    });
+}
+function guardarEnHistorial(termino) {
+    if (!termino) return;
+    let historial = JSON.parse(localStorage.getItem('futura_historial')) || [];
+    
+    // Si ya existe, lo sacamos para ponerlo primero
+    historial = historial.filter(t => t.toLowerCase() !== termino.toLowerCase());
+    historial.unshift(termino);
+    
+    // Guardamos máximo 4 búsquedas recientes
+    if (historial.length > 4) historial.pop(); 
+    
+    localStorage.setItem('futura_historial', JSON.stringify(historial));
+    renderHistorial();
+}
+
+function renderHistorial() {
+    const contenedor = document.getElementById('historialTags');
+    if (!contenedor) return;
+    
+    const historial = JSON.parse(localStorage.getItem('futura_historial')) || [];
+    
+    if (historial.length === 0) {
+        contenedor.innerHTML = '<span style="color: var(--text-dim); font-size: 13px;">No hay búsquedas recientes</span>';
+        return;
+    }
+
+    contenedor.innerHTML = historial.map(termino => 
+        `<button type="button" class="tag" onclick="buscar('${termino}')" style="background: rgba(167,139,250,0.1); border-color: var(--accent); cursor: pointer;">
+            🕒 ${termino}
+        </button>`
+    ).join('');
 }

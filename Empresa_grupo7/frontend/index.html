@@ -3,9 +3,12 @@
 <head> 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TrendSight Co. — Decisor de Stock</title>
+  <title>Futura Co. — Decisor de Stock</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
+
+
+
 <body>
 
   <!-- HEADER -->
@@ -46,13 +49,10 @@
           Analizar
         </button>
       </div>
-      <div class="search-hints">
-        <span class="hint" onclick="buscar('jeans')">jeans</span>
-        <span class="hint" onclick="buscar('buzo')">buzo</span>
-        <span class="hint" onclick="buscar('falda')">falda</span>
-        <span class="hint" onclick="buscar('blazer')">blazer</span>
-        <span class="hint" onclick="buscar('jogger')">jogger</span>
-        <span class="hint" onclick="buscar('vestido')">vestido</span>
+      <div class="search-tags" style="margin-top: 15px;">
+        <span style="color: var(--text-muted); font-size: 14px;">Tus búsquedas Premium: </span>
+        <div id="historialTags" style="display: inline-flex; gap: 10px;">
+            </div>
       </div>
     </div>
   </section>
@@ -125,10 +125,21 @@
             <div class="score-bar-wrap">
               <div class="score-bar" id="scoreBar"></div>
             </div>
+
             <span class="score-value" id="scoreValue"></span>
           </div>
         </div>
         <p class="decision-description" id="decisionDescription"></p>
+        <div style="margin-top: 20px; margin-bottom: 20px; padding: 16px; background: linear-gradient(135deg, rgba(167,139,250,0.1) 0%, rgba(124,58,237,0.05) 100%); border: 1px solid rgba(167,139,250,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <span style="font-size: 11px; color: var(--accent); font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px;">⚡ StockIntel™</span>
+                <p style="margin: 4px 0 0 0; font-size: 15px; color: var(--text);">Volumen sugerido</p>
+            </div>
+            <div style="text-align: right;">
+                <h3 id="siUnidades" style="margin: 0; color: #fff; font-size: 26px; font-weight: bold;">—</h3>
+                <p id="siInversion" style="margin: 2px 0 0 0; font-size: 13px; color: var(--text-dim);">Inversión est: —</p>
+            </div>
+        </div>
         <div class="decision-reasons" id="decisionReasons"></div>
       </div>
 
@@ -211,35 +222,85 @@
 <p>Futura Co. © 2026 · Fashion Foresight & Data Intelligence · Uso interno y académico</p>    </div>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="js/app.js"></script>
+
+ 
+
+  <div id="productModal" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 id="modalTitle">Ficha Técnica</h2>
+        <div style="display: flex; gap: 15px; align-items: center;">
+          <button onclick="descargarPDF(event)" style="background: var(--accent); color: var(--bg); border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">📥 Descargar PDF</button>
+          <button onclick="cerrarModal()" class="close-btn" style="position: relative; margin: 0;">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" style="display: flex; gap: 20px;">
+        <div style="flex: 0 0 180px;">
+          <img id="mImagen" src="" alt="Prenda analizada" style="width: 100%; height: 240px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border2);">
+        </div>
+        <div class="ficha-grid" style="flex: 1; margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="ficha-section">
+            <h4>🧵 ADN del Producto</h4>
+            <p><strong>Material:</strong> <span id="mMaterial"></span></p>
+            <p><strong>Talles:</strong> <span id="mTalles"></span></p>
+          </div>
+          <div class="ficha-section">
+            <h4>🎯 Segmentación</h4>
+            <p><strong>Edad:</strong> <span id="mEdad"></span></p>
+            <p><strong>Canal:</strong> <span id="mCanal"></span></p>
+          </div>
+          <div class="ficha-section" style="grid-column: span 2;">
+            <h4>📊 Business Intelligence</h4>
+            <div style="display: flex; justify-content: space-between; background: var(--bg3); padding: 10px; border-radius: 8px;">
+              <p style="margin:0;"><strong>Riesgo:</strong> <span id="mComp"></span></p>
+              <p style="margin:0; color: var(--green);"><strong>Confianza:</strong> <span id="mConf"></span>%</p>
+              <p style="margin:0; color: var(--gold);"><strong>Rating:</strong> <span id="mSat"></span>/5 ⭐</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="js/app.js"></script>
 
   <div id="productModal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 id="modalTitle">Ficha Técnica</h2>
-      <button onclick="cerrarModal()" class="close-btn">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="ficha-grid">
-        <div class="ficha-section">
-          <h4>🧵 ADN del Producto</h4>
-          <p><strong>Material:</strong> <span id="mMaterial"></span></p>
-          <p><strong>Talles:</strong> <span id="mTalles"></span></p>
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 id="modalTitle">Ficha Técnica</h2>
+        <div style="display: flex; gap: 15px; align-items: center;">
+          <button onclick="descargarPDF(event)" style="background: var(--accent); color: var(--bg); border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">📥 Descargar PDF</button>
+          <button onclick="cerrarModal()" class="close-btn" style="position: relative; margin: 0;">&times;</button>
         </div>
-        <div class="ficha-section">
-          <h4>🎯 Segmentación</h4>
-          <p><strong>Edad:</strong> <span id="mEdad"></span></p>
-          <p><strong>Canal:</strong> <span id="mCanal"></span></p>
+      </div>
+      <div class="modal-body" style="display: flex; gap: 20px;">
+        <div style="flex: 0 0 180px;">
+          <img id="mImagen" src="" alt="Prenda analizada" style="width: 100%; height: 240px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border2);">
         </div>
-        <div class="ficha-section">
-          <h4>📊 Business Intelligence</h4>
-          <p><strong>Competencia:</strong> <span id="mComp"></span></p>
-          <p><strong>Confianza IA:</strong> <span id="mConf"></span>%</p>
-          <p><strong>Satisfacción:</strong> <span id="mSat"></span>/5 ⭐</p>
+        <div class="ficha-grid" style="flex: 1; margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="ficha-section">
+            <h4>🧵 ADN del Producto</h4>
+            <p><strong>Material:</strong> <span id="mMaterial"></span></p>
+            <p><strong>Talles:</strong> <span id="mTalles"></span></p>
+          </div>
+          <div class="ficha-section">
+            <h4>🎯 Segmentación</h4>
+            <p><strong>Edad:</strong> <span id="mEdad"></span></p>
+            <p><strong>Canal:</strong> <span id="mCanal"></span></p>
+          </div>
+          <div class="ficha-section" style="grid-column: span 2;">
+            <h4>📊 Business Intelligence</h4>
+            <div style="display: flex; justify-content: space-between; background: var(--bg3); padding: 10px; border-radius: 8px;">
+              <p style="margin:0;"><strong>Riesgo:</strong> <span id="mComp"></span></p>
+              <p style="margin:0; color: var(--green);"><strong>Confianza:</strong> <span id="mConf"></span>%</p>
+              <p style="margin:0; color: var(--gold);"><strong>Rating:</strong> <span id="mSat"></span>/5 ⭐</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 </body>
 </html>
